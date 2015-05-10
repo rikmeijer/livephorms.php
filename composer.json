@@ -1,0 +1,7 @@
+{
+	"name" : "rikmeijer/live-phorms",
+	"description" : "expirement on creating \"live\" forms on any resource",
+	"require-dev" : {
+	    "codeception/codeception" : "*"
+	}
+}

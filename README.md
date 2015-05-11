@@ -76,6 +76,9 @@ var validator = function(data) {
 ## create handler
 POST /form/handler.(php|js)
 ```php
+/**
+ * @param array $servicecontainer configured for live-phorms, contains available resources
+ */
 <?php return function(array $servicecontainer) {
 	// construct environment here
 	return function (array $data) { 

@@ -76,10 +76,11 @@ var validator = function(data) {
 ## create handler
 POST /form/handler.(php|js)
 ```php
-<?php return function(array $data) {
-	
-	// ... store form data here somehow
-
+<?php return function(array $servicecontainer) {
+	// construct environment here
+	return function (array $data) { 
+		// ... store form data here somehow
+	};
 };
 ```
 

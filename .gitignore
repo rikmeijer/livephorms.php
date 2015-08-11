@@ -1,4 +1,4 @@
-composer.phar
+auth.json
 vendor/
 .settings/
 .buildpath

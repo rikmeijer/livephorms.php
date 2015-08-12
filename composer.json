@@ -1,9 +1,6 @@
 {
 	"name" : "rikmeijer/live-phorms",
 	"description" : "experiment on creating \"live\" forms on any resource",
-	"require-dev" : {
-	    "codeception/codeception" : "*"
-	},
 	"autoload": {
         "psr-4": {"Livephorms\\": "src/"}
     }

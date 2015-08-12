@@ -212,7 +212,8 @@
  
  <target name="codeception" unless="codeception.done" depends="prepare" description="Run unit tests with codeception">
   <exec executable="${codeception}" resultproperty="result.codeception" taskname="codeception">
-   <arg value="--configuration"/>
+   <arg value="run"/>
+   <arg value="--config"/>
    <arg path="${basedir}/build/codeception.yml"/>
    <arg value="--coverage-html"/>
    <arg value="--coverage-xml"/>
@@ -223,6 +224,7 @@
 
  <target name="codeception-no-coverage" unless="codeception.done" depends="prepare" description="Run unit tests with codeception (without generating code coverage reports)">
   <exec executable="${codeception}" failonerror="true" taskname="codeception">
+   <arg value="run"/>
    <arg value="--config"/>
    <arg path="${basedir}/build/codeception.yml"/>
    <arg value="--no-coverage"/>

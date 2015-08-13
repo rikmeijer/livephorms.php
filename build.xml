@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="livephorms" default="full-build">
+ <property name="composer" value="C:\Users\hameijer\AppData\Local\ComposerSetup\bin\composer"/>
+ 
  <!-- By default, we assume all tools to be on the $PATH -->
  <property name="pdepend" value="pdepend"/>
  <property name="phpcpd" value="phpcpd"/>
@@ -9,6 +11,8 @@
  <property name="phpmd" value="phpmd"/>
  <property name="phpunit" value="phpunit"/>
  <property name="codeception" value="codecept"/>
+
+  <property name="builddir" value="${basedir}/build"/>
 
  <!-- Use this when the tools are located as PHARs in ${basedir}/build/tools
  <property name="pdepend" value="${basedir}/build/tools/pdepend.phar"/>
@@ -30,11 +34,11 @@
  <property name="phpunit"   value="${basedir}/vendor/bin/phpunit"/>
  <property name="codeception" value="${basedir}/vendor/bin/codecept"/> -->
 
- <target name="full-build" depends="prepare,static-analysis,codeception,phpdox,-check-failure" description="Performs static analysis, runs the tests, and generates project documentation"/>
+ <target name="full-build" depends="prepare,composer,static-analysis,codeception,phpdox,-check-failure" description="Performs static analysis, runs the tests, and generates project documentation"/>
 
- <target name="full-build-parallel" depends="prepare,static-analysis-parallel,codeception,phpdox,-check-failure" description="Performs static analysis (executing the tools in parallel), runs the tests, and generates project documentation"/>
+ <target name="full-build-parallel" depends="prepare,composer,static-analysis-parallel,codeception,phpdox,-check-failure" description="Performs static analysis (executing the tools in parallel), runs the tests, and generates project documentation"/>
 
- <target name="quick-build" depends="prepare,lint,codeception-no-coverage" description="Performs a lint check and runs the tests (without generating code coverage reports)"/>
+ <target name="quick-build" depends="prepare,composer,lint,codeception-no-coverage" description="Performs a lint check and runs the tests (without generating code coverage reports)"/>
 
  <target name="static-analysis" depends="lint,phploc-ci,pdepend,phpmd-ci,phpcs-ci,phpcpd-ci" description="Performs static analysis"/>
 
@@ -53,22 +57,41 @@
  </target>
 
  <target name="clean" unless="clean.done" description="Cleanup build artifacts">
-  <delete dir="${basedir}/build/api"/>
-  <delete dir="${basedir}/build/coverage"/>
-  <delete dir="${basedir}/build/logs"/>
-  <delete dir="${basedir}/build/pdepend"/>
-  <delete dir="${basedir}/build/phpdox"/>
+  <delete dir="${builddir}/api"/>
+  <delete dir="${builddir}/coverage"/>
+  <delete dir="${builddir}/logs"/>
+  <delete dir="${builddir}/pdepend"/>
+  <delete dir="${builddir}/phpdox"/>
   <property name="clean.done" value="true"/>
  </target>
 
  <target name="prepare" unless="prepare.done" depends="clean" description="Prepare for build">
-  <mkdir dir="${basedir}/build/api"/>
-  <mkdir dir="${basedir}/build/coverage"/>
-  <mkdir dir="${basedir}/build/logs"/>
-  <mkdir dir="${basedir}/build/pdepend"/>
-  <mkdir dir="${basedir}/build/phpdox"/>
+  <mkdir dir="${builddir}/api"/>
+  <mkdir dir="${builddir}/coverage"/>
+  <mkdir dir="${builddir}/logs"/>
+  <mkdir dir="${builddir}/pdepend"/>
+  <mkdir dir="${builddir}/phpdox"/>
   <property name="prepare.done" value="true"/>
  </target>
+ 
+  <target name="php-check">
+    <condition property="php" value="php">
+      <not>
+        <isset property="${php}"/>
+      </not>
+    </condition>
+  </target>
+  
+  <target name="composer-lock-check">
+    <available file="composer.lock" property="composer-lock.present"/>
+  </target>
+  
+  <target name="composer" depends="php-check,composer-lock-check" description="Run composer update">
+    <exec executable="${php}">
+      <arg value="${composer}"/>
+      <arg value="update"/>
+    </exec>
+  </target>
 
  <target name="lint" unless="lint.done" description="Perform syntax check of sourcecode files">
   <apply executable="php" taskname="lint">
@@ -102,9 +125,9 @@
   <exec executable="${phploc}" taskname="phploc">
    <arg value="--count-tests"/>
    <arg value="--log-csv"/>
-   <arg path="${basedir}/build/logs/phploc.csv"/>
+   <arg path="${builddir}/logs/phploc.csv"/>
    <arg value="--log-xml"/>
-   <arg path="${basedir}/build/logs/phploc.xml"/>
+   <arg path="${builddir}/logs/phploc.xml"/>
    <arg path="${basedir}/src"/>
    <arg path="${basedir}/tests"/>
   </exec>
@@ -114,9 +137,9 @@
 
  <target name="pdepend" unless="pdepend.done" depends="prepare" description="Calculate software metrics using PHP_Depend and log result in XML format. Intended for usage within a continuous integration environment.">
   <exec executable="${pdepend}" taskname="pdepend">
-   <arg value="--jdepend-xml=${basedir}/build/logs/jdepend.xml"/>
-   <arg value="--jdepend-chart=${basedir}/build/pdepend/dependencies.svg"/>
-   <arg value="--overview-pyramid=${basedir}/build/pdepend/overview-pyramid.svg"/>
+   <arg value="--jdepend-xml=${builddir}/logs/jdepend.xml"/>
+   <arg value="--jdepend-chart=${builddir}/pdepend/dependencies.svg"/>
+   <arg value="--overview-pyramid=${builddir}/pdepend/overview-pyramid.svg"/>
    <arg path="${basedir}/src"/>
   </exec>
 
@@ -127,7 +150,7 @@
   <exec executable="${phpmd}" taskname="phpmd">
    <arg path="${basedir}/src"/>
    <arg value="text"/>
-   <arg path="${basedir}/build/phpmd.xml"/>
+   <arg path="${builddir}/phpmd.xml"/>
   </exec>
 
   <property name="phpmd.done" value="true"/>
@@ -137,9 +160,9 @@
   <exec executable="${phpmd}" taskname="phpmd">
    <arg path="${basedir}/src"/>
    <arg value="xml"/>
-   <arg path="${basedir}/build/phpmd.xml"/>
+   <arg path="${builddir}/phpmd.xml"/>
    <arg value="--reportfile"/>
-   <arg path="${basedir}/build/logs/pmd.xml"/>
+   <arg path="${builddir}/logs/pmd.xml"/>
   </exec>
 
   <property name="phpmd.done" value="true"/>
@@ -160,7 +183,7 @@
  <target name="phpcs-ci" unless="phpcs.done" depends="prepare" description="Find coding standard violations using PHP_CodeSniffer and log result in XML format. Intended for usage within a continuous integration environment.">
   <exec executable="${phpcs}" output="/dev/null" taskname="phpcs">
    <arg value="--report=checkstyle"/>
-   <arg value="--report-file=${basedir}/build/logs/checkstyle.xml"/>
+   <arg value="--report-file=${builddir}/logs/checkstyle.xml"/>
    <arg value="--standard=PSR2"/>
    <arg value="--extensions=php"/>
    <arg value="--ignore=autoload.php"/>
@@ -182,7 +205,7 @@
  <target name="phpcpd-ci" unless="phpcpd.done" depends="prepare" description="Find duplicate code using PHPCPD and log result in XML format. Intended for usage within a continuous integration environment.">
   <exec executable="${phpcpd}" taskname="phpcpd">
    <arg value="--log-pmd"/>
-   <arg path="${basedir}/build/logs/pmd-cpd.xml"/>
+   <arg path="${builddir}/logs/pmd-cpd.xml"/>
    <arg path="${basedir}/src"/>
   </exec>
 
@@ -192,7 +215,7 @@
  <target name="phpunit" unless="phpunit.done" depends="prepare" description="Run unit tests with phpunit">
   <exec executable="${phpunit}" resultproperty="result.phpunit" taskname="phpunit">
    <arg value="--configuration"/>
-   <arg path="${basedir}/build/phpunit.yml"/>
+   <arg path="${builddir}/phpunit.yml"/>
    
    <arg value="--coverage-html"/>
   </exec>
@@ -203,7 +226,7 @@
  <target name="phpunit-no-coverage" unless="phpunit.done" depends="prepare" description="Run unit tests with phpunit (without generating code coverage reports)">
   <exec executable="${phpunit}" failonerror="true" taskname="phpunit">
    <arg value="--config"/>
-   <arg path="${basedir}/build/phpunit.yml"/>
+   <arg path="${builddir}/phpunit.yml"/>
    <arg value="--no-coverage"/>
   </exec>
 
@@ -214,7 +237,7 @@
   <exec executable="${codeception}" resultproperty="result.codeception" taskname="codeception">
    <arg value="run"/>
    <arg value="--config"/>
-   <arg path="${basedir}/build/codeception.yml"/>
+   <arg path="${builddir}/codeception.yml"/>
    <arg value="--xml"/>
    <arg value="--tap"/>
    <arg value="--coverage-html"/>
@@ -228,7 +251,7 @@
   <exec executable="${codeception}" failonerror="true" taskname="codeception">
    <arg value="run"/>
    <arg value="--config"/>
-   <arg path="${basedir}/build/codeception.yml"/>
+   <arg path="${builddir}/codeception.yml"/>
    <arg value="--no-coverage"/>
   </exec>
 
@@ -236,7 +259,7 @@
  </target>
 
  <target name="phpdox" unless="phpdox.done" depends="phploc-ci,phpcs-ci,phpmd-ci" description="Generate project documentation using phpDox">
-  <exec executable="${phpdox}" dir="${basedir}/build" taskname="phpdox"/>
+  <exec executable="${phpdox}" dir="${builddir}" taskname="phpdox"/>
 
   <property name="phpdox.done" value="true"/>
  </target>

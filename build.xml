@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="livephorms" default="full-build">
- <property name="composer" value="C:\Users\hameijer\AppData\Local\ComposerSetup\bin\composer"/>
+ <property name="composer" value="composer"/>
  
  <!-- By default, we assume all tools to be on the $PATH -->
  <property name="pdepend" value="pdepend"/>

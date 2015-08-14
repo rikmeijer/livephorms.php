@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="livephorms" default="full-build">
- <property name="composer" value="composer"/>
- 
  <!-- By default, we assume all tools to be on the $PATH -->
  <property name="pdepend" value="pdepend"/>
  <property name="phpcpd" value="phpcpd"/>
@@ -86,9 +84,9 @@
     <available file="composer.lock" property="composer-lock.present"/>
   </target>
   
-  <target name="composer" depends="php-check,composer-lock-check" description="Run composer update">
+  <target name="composer" if="composer.location" depends="php-check,composer-lock-check" description="Run composer update">
     <exec executable="${php}">
-      <arg value="${composer}"/>
+      <arg value="${composer.location}"/>
       <arg value="update"/>
     </exec>
   </target>

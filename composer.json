@@ -1,7 +1,12 @@
 {
 	"name" : "rikmeijer/live-phorms",
 	"description" : "experiment on creating \"live\" forms on any resource",
-	"autoload": {
-        "psr-4": {"Livephorms\\": "src/"}
-    }
+	"autoload" : {
+		"psr-4" : {
+			"Livephorms\\" : "src/"
+		}
+	},
+	"require" : {
+	    "rikmeijer/activerecord.php" : "dev-master"
+	}
 }
